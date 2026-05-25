@@ -1,0 +1,10 @@
+{
+  "output_format": "mp3_44100_192",
+  "versions": "2",
+  "max_chars": "500",
+  "zip_filename": "vox_batch_output",
+  "filename_pattern": "slug_index_take",
+  "include_manifest": true,
+  "voice_settings": {},
+  "last_voice_id": ""
+}

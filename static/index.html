@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vox Batch</title>
+<link rel="icon" href="/static/favicon.png?v=4" type="image/png">
+<link rel="shortcut icon" href="/static/favicon.png?v=4" type="image/png">
+<link rel="stylesheet" href="/static/style.css">
+
+</head>
+<body>
+<div class="container">
+  <div class="brand">
+    <img src="/static/logo.png" class="brand-logo" alt="Vox Batch logo">
+    <div class="brand-text">
+      <h1>Vox Batch</h1>
+      <p class="subtitle">Script .txt &rarr; segments &rarr; MP3 files &rarr; ZIP download · Powered by <a href="https://elevenlabs.io" target="_blank" rel="noopener">ElevenLabs</a></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">API Key</div>
+      <a class="text-link" href="https://elevenlabs.io/app/speech-synthesis/text-to-speech" target="_blank" rel="noopener">Open ElevenLabs TTS</a>
+    </div>
+    <div class="inline">
+      <input type="password" id="apiKey" placeholder="xi_api_...">
+      <button id="loadVoicesBtn" onclick="loadVoices()">Load voices</button>
+    </div>
+    <div class="mini-panel" id="creditsBox">
+      <strong id="creditsUsed">0</strong> / <strong id="creditsLimit">0</strong> credits used
+      <span id="creditsRemaining"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Voice</div>
+    <div class="row">
+      <div class="field" style="margin-bottom:0">
+        <label>Voice</label>
+        <select id="voiceSelect" onchange="onVoiceChanged()"><option value="">— load first —</option></select>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label title="Model choice changes quality, language support, speed, and cost behavior.">Model</label>
+        <select id="modelSelect" title="Choose the ElevenLabs speech model used for generated audio.">
+          <option value="eleven_multilingual_v2">Multilingual v2</option>
+          <option value="eleven_turbo_v2_5">Turbo v2.5</option>
+          <option value="eleven_turbo_v2">Turbo v2</option>
+          <option value="eleven_monolingual_v1">Monolingual v1</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="card-title">Voice Settings</div>
+
+    <div class="sliders-grid">
+      <div class="slider-wrap">
+        <div class="slider-header">
+          <span class="slider-label" title="Controls speaking speed. 100% is normal speed.">Speed</span>
+          <span class="slider-val" id="speedVal">100%</span>
+        </div>
+        <input type="range" min="70" max="200" step="1" value="100" id="speed" oninput="setValueText('speedVal',this.value,'%')">
+        <div class="slider-limits"><span>Slower</span><span>Faster</span></div>
+      </div>
+      <div class="slider-wrap">
+        <div class="slider-header">
+          <span class="slider-label" title="Higher stability makes delivery more consistent; lower can be more expressive.">Stability</span>
+          <span class="slider-val" id="stabVal">50%</span>
+        </div>
+        <input type="range" min="0" max="100" step="1" value="50" id="stability" oninput="setValueText('stabVal',this.value,'%')">
+        <div class="slider-limits"><span>More variable</span><span>More stable</span></div>
+      </div>
+      <div class="slider-wrap">
+        <div class="slider-header">
+          <span class="slider-label" title="Higher similarity keeps the voice closer to the selected voice.">Similarity</span>
+          <span class="slider-val" id="simVal">75%</span>
+        </div>
+        <input type="range" min="0" max="100" step="1" value="75" id="similarity" oninput="setValueText('simVal',this.value,'%')">
+        <div class="slider-limits"><span>Low</span><span>High</span></div>
+      </div>
+      <div class="slider-wrap">
+        <div class="slider-header">
+          <span class="slider-label" title="Adds more style and expression when supported by the selected model and voice.">Style Exaggeration</span>
+          <span class="slider-val" id="styleVal">0%</span>
+        </div>
+        <input type="range" min="0" max="100" step="1" value="0" id="styleExag" oninput="setValueText('styleVal',this.value,'%')">
+        <div class="slider-limits"><span>None</span><span>Exaggerated</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="toggle-row">
+      <span class="toggle-label" title="Enhances similarity and clarity for some voices.">Speaker Boost</span>
+      <label class="toggle"><input type="checkbox" id="speakerBoost" checked><span class="toggle-track"></span></label>
+    </div>
+    <div class="voice-actions">
+      <span class="voice-status" id="voiceStatus">Defaults loaded</span>
+      <button type="button" class="small" onclick="resetVoiceSettings()">Reset voice settings</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Output Settings</div>
+    <div class="row">
+      <div class="field" style="margin-bottom:0">
+        <label>Output Format</label>
+        <select id="outputFormat">
+          <option value="mp3_44100_128">MP3 44.1 kHz (128kbps)</option>
+          <option value="mp3_44100_192">MP3 44.1 kHz (192kbps)</option>
+          <option value="mp3_44100_64">MP3 44.1 kHz (64kbps)</option>
+          <option value="mp3_22050_32">MP3 22.05 kHz (32kbps)</option>
+          <option value="pcm_44100">PCM 44.1 kHz</option>
+          <option value="pcm_22050">PCM 22.05 kHz</option>
+          <option value="pcm_16000">PCM 16 kHz</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Versions per chunk</label>
+        <input type="number" id="versions" value="2" min="1" max="10" oninput="if(segments.length)renderSegments()">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field" style="margin-bottom:0">
+        <label>ZIP filename</label>
+        <input type="text" id="zipFilename" value="vox_batch_output">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Filename pattern</label>
+        <select id="filenamePattern">
+          <option value="slug_index_take">hook_01_take_01</option>
+          <option value="name_part_take">Hook 1 (1)</option>
+          <option value="index_name_part_take">01_hook_01_take_01</option>
+        </select>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Include manifest</span>
+      <label class="toggle"><input type="checkbox" id="includeManifest" checked><span class="toggle-track"></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Script File (.txt)</div>
+    <div class="field">
+      <label>Max characters per segment chunk</label>
+      <input type="number" id="maxChars" value="500" min="100" max="5000">
+    </div>
+    <div class="drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+      <div class="main" id="dropMain">Click or drag .txt file here</div>
+      <div class="sub" id="dropSub">Use hashtag headings for segments: # Hook, # Basics, # Outro</div>
+    </div>
+    <div class="format-example"><code># Hook
+Your intro text here...
+
+# Main
+More text here...</code></div>
+    <input type="file" id="fileInput" accept=".txt" onchange="handleFile(this.files[0])">
+    <div class="empty-state" id="emptyState">No segments found. Add hashtag headings like # Hook before each section.</div>
+    <div class="seg-list" id="segList"></div>
+    <div class="stats" id="statsBox" style="display:none">
+      <div class="stat"><div class="stat-val" id="statSegs">0</div><div class="stat-lbl">segments</div></div>
+      <div class="stat"><div class="stat-val" id="statParts">0</div><div class="stat-lbl">total files</div></div>
+      <div class="stat"><div class="stat-val" id="statChars">0</div><div class="stat-lbl">characters</div></div>
+      <div class="stat"><div class="stat-val" id="statCredits">0</div><div class="stat-lbl">est. credits</div></div>
+    </div>
+    <div class="mini-panel" id="creditEstimateBox">
+      Estimated generation use: <strong id="creditEstimate">0</strong> credits<span id="creditEstimateRemaining"></span>
+    </div>
+  </div>
+
+  <button class="primary" id="genBtn" disabled onclick="startGeneration()">Generate &amp; Download ZIP</button>
+  <button id="cancelBtn" style="display:none;width:100%;margin-top:8px" onclick="cancelGeneration()">Cancel generation</button>
+  <div class="progress" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="summary" id="summaryBox"></div>
+  <div class="log" id="logBox"></div>
+</div>
+<div class="toast" id="toast">Settings saved</div>
+
+<script src="/static/app.js"></script>
