@@ -18,7 +18,7 @@ ALLOWED_OUTPUT_FORMATS = {
     'pcm_44100', 'pcm_22050', 'pcm_16000'
 }
 ALLOWED_MODELS = {
-    'eleven_multilingual_v2', 'eleven_turbo_v2_5',
+    'eleven_v3', 'eleven_multilingual_v2', 'eleven_turbo_v2_5',
     'eleven_turbo_v2', 'eleven_monolingual_v1'
 }
 MAX_POST_BYTES = 1_000_000
@@ -339,6 +339,15 @@ class Handler(BaseHTTPRequestHandler):
 
         ext = 'wav' if output_format.startswith('pcm') else 'mp3'
         url = f'https://api.elevenlabs.io/v1/text-to-speech/{quote(voice_id)}?output_format={quote(output_format)}'
+        voice_settings = {
+            'stability': stability
+        } if model_id == 'eleven_v3' else {
+            'stability': stability,
+            'similarity_boost': similarity,
+            'style': style_exag,
+            'use_speaker_boost': speaker_boost,
+            'speed': speed
+        }
 
         manifest = {
             'app': 'Vox Batch',
@@ -346,13 +355,7 @@ class Handler(BaseHTTPRequestHandler):
             'output_format': output_format,
             'versions': versions,
             'filename_pattern': filename_pattern,
-            'voice_settings': {
-                'stability': stability,
-                'similarity_boost': similarity,
-                'style': style_exag,
-                'use_speaker_boost': speaker_boost,
-                'speed': speed
-            },
+            'voice_settings': voice_settings,
             'files': []
         }
 
@@ -381,13 +384,7 @@ class Handler(BaseHTTPRequestHandler):
                             payload = json.dumps({
                                 'text': part_text,
                                 'model_id': model_id,
-                                'voice_settings': {
-                                    'stability': stability,
-                                    'similarity_boost': similarity,
-                                    'style': style_exag,
-                                    'use_speaker_boost': speaker_boost,
-                                    'speed': speed
-                                }
+                                'voice_settings': voice_settings
                             }).encode('utf-8')
                             req = urllib.request.Request(
                                 url, data=payload,

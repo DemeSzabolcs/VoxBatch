@@ -104,6 +104,7 @@ The app will:
 Select the voice you want to use.
 
 Choose the model:
+- **Eleven v3**
 - **Multilingual v2**
 - **Turbo v2.5**
 - **Turbo v2**

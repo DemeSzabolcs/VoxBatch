@@ -296,6 +296,25 @@ function getCurrentVoiceId() {
   return byId('voiceSelect').value || '';
 }
 
+function isElevenV3Selected() {
+  return byId('modelSelect').value === 'eleven_v3';
+}
+
+function setControlGroupVisible(controlId, visible) {
+  const input = byId(controlId);
+  const group = input.closest('.slider-wrap') || input.closest('.toggle-row');
+  if (group) group.style.display = visible ? '' : 'none';
+  input.disabled = !visible;
+}
+
+function updateModelControlVisibility() {
+  const isV3 = isElevenV3Selected();
+  setControlGroupVisible('speed', !isV3);
+  setControlGroupVisible('similarity', !isV3);
+  setControlGroupVisible('styleExag', !isV3);
+  setControlGroupVisible('speakerBoost', !isV3);
+}
+
 function readVoiceControlsFromUI() {
   return {
     model_id: byId('modelSelect').value,
@@ -318,6 +337,7 @@ function applyVoiceControlsToUI(vs) {
   byId('styleExag').value = vs.style_exaggeration;
   setValueText('styleVal', vs.style_exaggeration, '%');
   byId('speakerBoost').checked = !!vs.speaker_boost;
+  updateModelControlVisibility();
 }
 
 function sameVoiceSettings(a, b) {
@@ -412,6 +432,7 @@ async function loadSettings() {
 // Called when the user changes any voice-scoped control (model, sliders, boost).
 // Writes the current UI values under the active voice id and persists.
 function onVoiceSettingChanged() {
+  updateModelControlVisibility();
   const vid = getCurrentVoiceId();
   if (vid) {
     if (!settingsCache.voice_settings) settingsCache.voice_settings = {};
