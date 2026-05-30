@@ -174,6 +174,8 @@ The app estimates generation usage like this:
 selected characters x versions per chunk
 ```
 
+Because this app uses the ElevenLabs API, every generated take costs credits. The ElevenLabs web app may let you regenerate the same speech a limited number of times for free, but that does not apply here.
+
 If your ElevenLabs credit data is loaded, the app also estimates how many credits would remain after the run.
 
 If the estimated usage is higher than your remaining credits, the app asks for confirmation before generating.
@@ -251,6 +253,7 @@ The app does not intentionally send your data anywhere else.
 
 ## Known limitations
 - Credit usage is only an estimate.
+- Every API generation costs ElevenLabs credits. The ElevenLabs web app may allow a couple of free regenerations for the same speech, but API-based generations in this app do not get those free retries.
 - Cancel generation is best-effort.
 - The app uses Python's built-in HTTP server and is intended for local use.
 - It is not designed for hosting on the public internet.
